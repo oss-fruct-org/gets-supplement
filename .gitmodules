@@ -1,0 +1,3 @@
+[submodule "gets-interface"]
+	path = gets-interface
+	url = https://github.com/oss-fruct-org/gets-java-api.git

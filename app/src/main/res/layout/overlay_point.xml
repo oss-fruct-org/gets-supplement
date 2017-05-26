@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/background_light"
+    tools:context="org.fruct.oss.getssupplement.overlays.OverlayPointFragment">
+
+    <LinearLayout
+        android:id="@+id/llContainer"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_below="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/activity_addpoint_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/str_point_name"
+            android:inputType="textCapSentences"
+            android:maxLength="150"
+            android:maxLines="1"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            />
+
+        <Button
+            android:id="@+id/activity_addpoint_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/choose_category"/>
+
+        <TextView
+            android:id="@+id/activity_addpoint_category_description"
+            tools:text="Ramp slope"
+            android:textColor="@android:color/black"
+            android:textSize="14sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <RatingBar
+            android:id="@+id/activity_addpoint_ratingbar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:stepSize="0.5"
+            android:rating="2.5"
+            android:layout_gravity="center"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <CheckBox
+                android:id="@+id/activity_addpoint_magnet_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true">
+            </CheckBox>
+
+            <TextView
+                android:id="@+id/activity_addpoint_magnet_text"
+                android:text="@string/activity_addpoint_magnet_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="?android:attr/listPreferredItemHeightSmall"
+                android:textAppearance="?android:attr/textAppearanceListItemSmall"
+                android:layout_toRightOf="@+id/activity_addpoint_magnet_check"
+                android:paddingRight="?android:attr/listPreferredItemPaddingRight"
+                android:paddingLeft="?android:attr/listPreferredItemPaddingLeft">
+            </TextView>
+
+        </RelativeLayout>
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/activity_addnewpoint_mapview_info"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:textColor="@android:color/black"
+            android:textSize="12sp"/>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_below="@+id/llContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="top"
+        android:layout_weight="1">
+
+        <FrameLayout android:id="@+id/map_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true" />
+
+        <ImageButton
+            android:id="@+id/activity_addpoint_location"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_location"
+            />
+    </RelativeLayout>
+
+
+</RelativeLayout>

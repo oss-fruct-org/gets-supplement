@@ -11,10 +11,12 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -33,6 +35,7 @@ import org.fruct.oss.getssupplement.map.LocationProvider;
 import org.fruct.oss.getssupplement.map.LocationReceiver;
 import org.fruct.oss.getssupplement.map.ScrollableOverlay;
 import org.fruct.oss.getssupplement.overlays.OverlayFiltersFragment;
+import org.fruct.oss.getssupplement.overlays.OverlayPointFragment;
 import org.osmdroid.tileprovider.IRegisterReceiver;
 import org.osmdroid.tileprovider.MapTile;
 import org.osmdroid.tileprovider.MapTileProviderArray;
@@ -73,6 +76,8 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
 
     private MyLocationNewOverlay locationOverlay;
 
+    IMyLocationProvider locationProvider;
+
     // флаг включения отслеживания
     private boolean isFollowingActive;
 
@@ -94,6 +99,7 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
         return new MapFragment();
     }
 
+    @NonNull
     public static String getTitle(Context context) {
         return context.getString(R.string.title_map);
     }
@@ -147,11 +153,15 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
             Log.d(getClass().getSimpleName(), "Update location to " + lastSavedLocation);
         }
 
-        overlayFiltersFragment = new OverlayFiltersFragment();
-
         FragmentTransaction tr = getFragmentManager().beginTransaction();
+        overlayFiltersFragment = new OverlayFiltersFragment();
         tr.add(R.id.overlay_filters, overlayFiltersFragment, "overlay-filters-fragment");
         tr.hide(overlayFiltersFragment);
+
+        OverlayPointFragment pointFragment = new OverlayPointFragment();
+        tr.add(R.id.overlay_point, pointFragment, "overlay-add-point-fragment");
+        pointFragment.setLocationProvider(locationProvider);
+        tr.hide(pointFragment);
         tr.commit();
 
         return view;
@@ -198,6 +208,7 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
         inflater.inflate(R.menu.fragment_map_menu, menu);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(getTitle(this.getContext()));
     }
 
     @Override
@@ -226,6 +237,23 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
                 tr.addToBackStack(null);
             }
             tr.commit();
+            return true;
+        }
+
+        if (item.getItemId() == R.id.action_add) {
+            FragmentTransaction tr = getFragmentManager().beginTransaction();
+            // скрываем панель фильтра
+            Fragment fr = getFragmentManager().findFragmentByTag("overlay-filters-fragment");
+            if (fr.isVisible()) {
+                tr.hide(fr);
+                getFragmentManager().popBackStack();
+            }
+
+            fr = getFragmentManager().findFragmentByTag("overlay-add-point-fragment");
+            tr.show(fr);
+            tr.addToBackStack(null);
+            tr.commit();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -271,8 +299,8 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
     }
 
     private void createLocationOverlay() {
-        IMyLocationProvider provider = new LocationProvider(getActivity());
-        locationOverlay = new ScrollableOverlay(provider, mapView);
+        locationProvider = new LocationProvider(getActivity());
+        locationOverlay = new ScrollableOverlay(locationProvider, mapView);
         locationOverlay.enableMyLocation();
 
         if (isFollowingActive)

@@ -80,11 +80,9 @@ public class MainActivity extends AppCompatActivity
 
     public void displayView(int id) {
         Fragment fragment = null;
-        String title = getResources().getString(R.string.app_name);
 
         if (id == R.id.nav_map) {
             fragment = MapFragment.newInstance();
-            title = MapFragment.getTitle(this);
 
         } else if (id == R.id.nav_queue) {
 
@@ -99,11 +97,6 @@ public class MainActivity extends AppCompatActivity
             ft.replace(R.id.container, fragment);
             ft.commit();
         }
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(title);
-        }
-        Log.d(this.getLocalClassName(), "Update view to " + id + "(" + title + ")");
     }
 
     @Override

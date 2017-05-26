@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 
+import org.fruct.oss.gets.Category;
 import org.fruct.oss.gets.Disability;
 import org.fruct.oss.gets.Point;
 import org.fruct.oss.gets.PointsService;
@@ -30,6 +32,7 @@ import org.fruct.oss.getssupplement.R;
 import org.fruct.oss.getssupplement.map.LocationProvider;
 import org.fruct.oss.getssupplement.map.LocationReceiver;
 import org.fruct.oss.getssupplement.map.ScrollableOverlay;
+import org.fruct.oss.getssupplement.overlays.OverlayFiltersFragment;
 import org.osmdroid.tileprovider.IRegisterReceiver;
 import org.osmdroid.tileprovider.MapTile;
 import org.osmdroid.tileprovider.MapTileProviderArray;
@@ -88,6 +91,11 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
     // отключенные для отображения категории инвалидности
     private List<String> excludedDisabilities = new ArrayList<>();
 
+    private List<Integer> excludedCategories = new ArrayList<>();
+
+    private  OverlayFiltersFragment overlayFiltersFragment;
+    private List<Disability> disabilities;
+
     public static MapFragment newInstance() {
         return new MapFragment();
     }
@@ -124,6 +132,7 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
 
         locationReceiver = new LocationReceiver(getContext());
         locationReceiver.addListener(this);
+
         locationReceiver.start();
 
         setHasOptionsMenu(true);
@@ -143,6 +152,13 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
             mapView.getController().setCenter(new GeoPoint(lastSavedLocation.getLatitude(), lastSavedLocation.getLongitude()));
             Log.d(getClass().getSimpleName(), "Update location to " + lastSavedLocation);
         }
+
+        overlayFiltersFragment = new OverlayFiltersFragment();
+
+        FragmentTransaction tr = getFragmentManager().beginTransaction();
+        tr.add(R.id.overlay_filters, overlayFiltersFragment, "overlay-filters-fragment");
+        tr.hide(overlayFiltersFragment);
+        tr.commit();
 
         return view;
     }
@@ -203,6 +219,19 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
         if (item.getItemId() == R.id.action_update) {
             pointsService.refresh();
             return true;
+        }
+
+        if (item.getItemId() == R.id.action_filter) {
+            FragmentTransaction tr = getFragmentManager().beginTransaction();
+            Fragment fr = getFragmentManager().findFragmentByTag("overlay-filters-fragment");
+            if (fr.isVisible()) {
+                tr.hide(fr);
+                getFragmentManager().popBackStack();
+            } else {
+                tr.show(fr);
+                tr.addToBackStack(null);
+            }
+            tr.commit();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -287,7 +316,8 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
         this.pointsService.setServerUrl("http://gets.cs.petrsu.ru/obstacle");
         this.pointsService.setLocation(lastSavedLocation);
         pointsService.addListener(this);
-        getActivity().supportInvalidateOptionsMenu();
+        onDataUpdated(false);
+        //getActivity().supportInvalidateOptionsMenu();
     }
 
     // Пришла свежая порция данных с сервера!!!
@@ -296,16 +326,34 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
         Log.v(getClass().getSimpleName(), "Points was Updated: " + isRemoteUpdate);
 
         // установка категорий инвалидности
-        List<Disability> disabilities = pointsService.queryList(pointsService.requestDisabilities());
+        disabilities = pointsService.queryList(pointsService.requestDisabilities());
         for (Disability d : disabilities) {
             if (excludedDisabilities.contains(d.getName()) && d.isActive()) {
                 pointsService.setDisabilityState(d, false);
+                d.setActive(false);
             }
 
             if (!(excludedDisabilities.contains(d.getName()) || d.isActive())) {
                 pointsService.setDisabilityState(d, true);
+                d.setActive(true);
             }
         }
+
+        List<Category> categories = pointsService.queryList(pointsService.requestCategories());
+        for (Category c : categories) {
+            if (excludedCategories.contains(c.getName()) && c.isActive()) {
+                pointsService.setCategoryState(c, false);
+                c.setActive(false);
+            }
+
+            if (!(excludedCategories.contains(c.getName()) || c.isActive())) {
+                pointsService.setCategoryState(c, true);
+                c.setActive(true);
+            }
+        }
+
+        overlayFiltersFragment.setDisabilities(disabilities);
+        overlayFiltersFragment.setCategories(categories);
 
         // обновление точек на карте
         obstaclesOverlay.removeAllItems();

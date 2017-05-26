@@ -4,6 +4,11 @@
 
     <FrameLayout android:id="@+id/map_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></FrameLayout>
+        android:layout_height="match_parent"/>
+
+    <FrameLayout android:id="@+id/overlay_filters"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"/>
 
 </RelativeLayout>

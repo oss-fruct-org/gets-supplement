@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_filter"
+        android:icon="@android:drawable/ic_menu_agenda"
+        app:showAsAction="always"
+        android:title="Filter"/>
     <item android:id="@+id/action_position"
         android:icon="@android:drawable/ic_menu_mylocation"
         app:showAsAction="always"
         android:title="Follow" />
     <item android:id="@+id/action_update"
-        android:icon="@android:drawable/ic_menu_rotate"
+        android:icon="@android:drawable/stat_notify_sync_noanim"
         app:showAsAction="always"
         android:title="Update" />
 </menu>

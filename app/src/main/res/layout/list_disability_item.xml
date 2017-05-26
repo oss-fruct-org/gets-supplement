@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:minHeight="48dp"
+              android:padding="2dp">
+    <ImageView android:id="@+id/disability_icon"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.2"
+        android:contentDescription="@string/disability" />
+
+    <TextView android:id="@+id/disability_name"
+        android:layout_width="0dp"
+        android:gravity="center_vertical"
+        android:layout_height="match_parent"
+        android:layout_weight="0.6"/>
+
+    <CheckBox android:id="@+id/disability_checked"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.2"/>
+</LinearLayout>

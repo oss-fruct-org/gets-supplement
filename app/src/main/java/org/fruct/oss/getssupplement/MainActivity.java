@@ -18,12 +18,21 @@ import android.view.MenuItem;
 
 import org.fruct.oss.getssupplement.fragments.MapFragment;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1003;
-    private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1002;
-    private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1001;
+    private static final int MY_PERMISSIONS_REQUEST_CODE = 201;
+    private static final String[] MY_PERMISSIONS = {
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    };
+
+    public static final List<String> AvailablePerms = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,59 +120,29 @@ public class MainActivity extends AppCompatActivity
     // проверка наличия прав (Андрюша 6+)
     private void checkPerms() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            if (this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                if (this.shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-
-                    // TODO: сделать если надо
-                    // Show an explanation to the user *asynchronously* -- don't block
-                    // this thread waiting for the user's response! After the user
-                    // sees the explanation, try again to request the permission.
-
+            List<String> requestedPerms = new ArrayList<>();
+            for (String perm : MY_PERMISSIONS) {
+                if (this.checkSelfPermission(perm) != PackageManager.PERMISSION_GRANTED) {
+                    requestedPerms.add(perm);
                 } else {
-
-                    this.requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                            MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+                    AvailablePerms.add(perm);
                 }
             }
-            if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                if (this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                } else {
-
-                    this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                            MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-                }
-            }
-            if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                if (this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
-                } else {
-
-                    this.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                            MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-                }
-            }
+            if (requestedPerms.size() > 0)
+                this.requestPermissions(requestedPerms.toArray(new String[requestedPerms.size()]),
+                            MY_PERMISSIONS_REQUEST_CODE);
+        } else {
+            AvailablePerms.addAll(Arrays.asList(MY_PERMISSIONS));
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-
-
-                } else {
-
-                    // TODO: permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
-
+        for (int i = 0; i < permissions.length; i++) {
+            if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                AvailablePerms.add(permissions[i]);
             }
+            Log.d(getClass().getSimpleName(), "Perm: " + permissions[i] + " granted: " + grantResults[i]);
         }
     }
 }

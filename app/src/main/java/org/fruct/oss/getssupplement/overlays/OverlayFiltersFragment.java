@@ -1,7 +1,11 @@
 package org.fruct.oss.getssupplement.overlays;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,6 +23,7 @@ import android.widget.TextView;
 
 import org.fruct.oss.gets.Category;
 import org.fruct.oss.gets.Disability;
+import org.fruct.oss.gets.PointsService;
 import org.fruct.oss.getssupplement.R;
 
 import java.util.ArrayList;
@@ -36,6 +41,9 @@ public class OverlayFiltersFragment extends ListFragment {
 
     private DisabilityAdapter adapter;
 
+    private PointsService pointsService;
+    private ServiceConnection pointConnection = new PointConnection();
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.overlay_filter, null);
@@ -46,6 +54,11 @@ public class OverlayFiltersFragment extends ListFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Bundle GeTS service
+        Intent intent = new Intent(getActivity(), PointsService.class);
+        getActivity().bindService(intent, pointConnection, Context.BIND_AUTO_CREATE);
+
         adapter = new DisabilityAdapter(getContext(),
                 R.layout.list_disability_item, disabilities, categories);
         setListAdapter(adapter);
@@ -66,15 +79,20 @@ public class OverlayFiltersFragment extends ListFragment {
     }
 
     @Override
-    public void onStop() {
-        Log.d(getClass().getSimpleName(), "Stopped");
-        super.onStop();
-    }
+    public void onHiddenChanged(boolean hidden) {
+        Log.d(getClass().getSimpleName(), "Hidden = " + hidden);
 
-    @Override
-    public void onDestroy() {
-        Log.d(getClass().getSimpleName(), "Destroyed");
-        super.onDestroy();
+        if (hidden == true && pointsService != null) {
+            for(Disability d : disabilities) {
+                pointsService.setDisabilityState(d, d.isActive());
+            }
+
+            for(Category c : categories) {
+                pointsService.setCategoryState(c, c.isActive());
+            }
+            pointsService.notifyDataUpdated(false);
+        }
+        super.onHiddenChanged(hidden);
     }
 
     @Override
@@ -85,6 +103,21 @@ public class OverlayFiltersFragment extends ListFragment {
             Log.d(getClass().getSimpleName(), "Item check is " + ((CheckBox)checkBox).isChecked());
         }
         super.onListItemClick(l, v, position, id);
+    }
+
+    // когда установлен коннект с pointsService
+    private void onPointsServiceReady(PointsService service) {
+        this.pointsService = service;
+        //getActivity().supportInvalidateOptionsMenu();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (pointsService != null) {
+            pointsService = null;
+        }
+
+        getActivity().unbindService(pointConnection);super.onDestroy();
     }
 
     private class DisabilityAdapter extends ArrayAdapter {
@@ -175,4 +208,20 @@ public class OverlayFiltersFragment extends ListFragment {
             }
         };
     }
+
+    // соединение с PointsService
+    private class PointConnection implements ServiceConnection {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder binder) {
+            PointsService service = ((PointsService.Binder) binder).getService();
+            onPointsServiceReady(service);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            pointsService = null;
+        }
+    }
+
+
 }

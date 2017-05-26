@@ -88,13 +88,7 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
 
     private ItemizedIconOverlay<Obstacle> obstaclesOverlay;
 
-    // отключенные для отображения категории инвалидности
-    private List<String> excludedDisabilities = new ArrayList<>();
-
-    private List<Integer> excludedCategories = new ArrayList<>();
-
     private  OverlayFiltersFragment overlayFiltersFragment;
-    private List<Disability> disabilities;
 
     public static MapFragment newInstance() {
         return new MapFragment();
@@ -326,31 +320,9 @@ public class MapFragment extends Fragment implements LocationReceiver.Listener,
         Log.v(getClass().getSimpleName(), "Points was Updated: " + isRemoteUpdate);
 
         // установка категорий инвалидности
-        disabilities = pointsService.queryList(pointsService.requestDisabilities());
-        for (Disability d : disabilities) {
-            if (excludedDisabilities.contains(d.getName()) && d.isActive()) {
-                pointsService.setDisabilityState(d, false);
-                d.setActive(false);
-            }
-
-            if (!(excludedDisabilities.contains(d.getName()) || d.isActive())) {
-                pointsService.setDisabilityState(d, true);
-                d.setActive(true);
-            }
-        }
+        List<Disability> disabilities = pointsService.queryList(pointsService.requestDisabilities());
 
         List<Category> categories = pointsService.queryList(pointsService.requestCategories());
-        for (Category c : categories) {
-            if (excludedCategories.contains(c.getName()) && c.isActive()) {
-                pointsService.setCategoryState(c, false);
-                c.setActive(false);
-            }
-
-            if (!(excludedCategories.contains(c.getName()) || c.isActive())) {
-                pointsService.setCategoryState(c, true);
-                c.setActive(true);
-            }
-        }
 
         overlayFiltersFragment.setDisabilities(disabilities);
         overlayFiltersFragment.setCategories(categories);
